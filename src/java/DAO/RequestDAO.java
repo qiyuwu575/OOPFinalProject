@@ -7,8 +7,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+/**
+ * The RequestDAO class provides methods for managing requests in the database.
+ * It supports creating new requests.
+ */
 public class RequestDAO {
 
+    /**
+     * Creates a new request in the database.
+     * The status of the request is set to 'Pending' by default.
+     *
+     * @param request the Request object containing the details of the request to be created
+     * @throws RuntimeException if a database access error occurs
+     */
     public void createRequest(Request request) {
         String sql = "INSERT INTO Requests (course_id, professional_id, status) VALUES (?, ?, 'Pending')";
 

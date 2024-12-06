@@ -1,17 +1,27 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Applications</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/style.css">
-    
+    <title>My Teaching Applications</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .application-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .status-pending { color: #f0ad4e; }
+        .status-approved { color: #5cb85c; }
+        .status-rejected { color: #d9534f; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="page-title">My Teaching Applications</h1>
+    <div class="container mt-4">
+        <h1>My Teaching Applications</h1>
         
+        <!-- 显示成功/错误消息 -->
         <c:if test="${not empty successMessage}">
             <div class="alert alert-success">
                 ${successMessage}
@@ -24,56 +34,36 @@
             </div>
         </c:if>
         
+        <!-- 显示申请列表或空状态 -->
         <c:choose>
             <c:when test="${empty applications}">
-                <div class="no-applications">
-                    <h3>No applications found</h3>
+                <div class="alert alert-info">
+                    <h4>No applications found</h4>
                     <p>You haven't submitted any teaching applications yet.</p>
-                    <a href="${pageContext.request.contextPath}/professional/search.jsp" 
+                    <a href="${pageContext.request.contextPath}/professional/search-courses" 
                        class="btn btn-primary">Search for Courses</a>
                 </div>
             </c:when>
             <c:otherwise>
-                <c:forEach items="${applications}" var="app">
-                    <div class="application-item">
-                        <h3>${app.courseName} (${app.courseCode})</h3>
-                        <div class="application-info">
-                            <p><strong>Institution:</strong> ${app.institutionName}</p>
-                            <p><strong>Term:</strong> ${app.term}</p>
-                            <p>
-                                <strong>Status:</strong> 
-                                <span class="status-label status-${app.status.toLowerCase()}">
-                                    ${app.status}
-                                </span>
-                            </p>
-                            <p><strong>Applied Date:</strong> 
-                                <fmt:formatDate value="${app.applicationDate}" 
-                                              pattern="MMMM dd, yyyy"/>
+                <div class="applications-list">
+                    <c:forEach var="app" items="${applications}">
+                        <div class="application-card">
+                            <h3>${app.courseName}</h3>
+                            <p>Course Code: ${app.courseCode}</p>
+                            <p>Application Date: ${app.applicationDate}</p>
+                            <p>Status: 
+                                <span class="status-${app.status.toLowerCase()}">${app.status}</span>
                             </p>
                         </div>
-                        <div class="application-actions">
-                            <a href="${pageContext.request.contextPath}/professional/course-details?courseId=${app.courseId}" 
-                               class="btn btn-primary">View Course Details</a>
-                            <c:if test="${app.status == 'PENDING'}">
-                                <form action="${pageContext.request.contextPath}/professional/withdraw-application" 
-                                      method="post" style="display: inline;">
-                                    <input type="hidden" name="applicationId" value="${app.applicationId}">
-                                    <button type="submit" class="btn btn-secondary" 
-                                            onclick="return confirm('Are you sure you want to withdraw this application?')">
-                                        Withdraw Application
-                                    </button>
-                                </form>
-                            </c:if>
-                        </div>
-                    </div>
-                </c:forEach>
+                    </c:forEach>
+                </div>
             </c:otherwise>
         </c:choose>
         
-        <div class="form-actions">
+        <div class="mt-4">
             <a href="${pageContext.request.contextPath}/professional/dashboard.jsp" 
                class="btn btn-secondary">Back to Dashboard</a>
-            <a href="${pageContext.request.contextPath}/professional/search.jsp" 
+            <a href="${pageContext.request.contextPath}/professional/search-courses" 
                class="btn btn-primary">Search More Courses</a>
         </div>
     </div>

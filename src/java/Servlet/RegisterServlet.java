@@ -2,6 +2,7 @@ package Servlet;
 
 import DAO.UserDAO;
 import model.User;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -9,10 +10,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * The RegisterServlet class handles user registration requests.
+ * It supports the registration of both academic professionals and institutions.
+ */
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
-    private UserDAO userDAO = new UserDAO();
 
+    private final UserDAO userDAO = new UserDAO();
+
+    /**
+     * Handles POST requests for user registration.
+     * Validates input, checks for duplicate email, and registers the user based on their type.
+     * Redirects the user to the login page upon success or back to the registration page with an error message.
+     *
+     * @param request  the HttpServletRequest object containing the request details
+     * @param response the HttpServletResponse object for sending the response
+     * @throws ServletException if an error occurs during request processing
+     * @throws IOException      if an I/O error occurs during request processing
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -21,18 +37,20 @@ public class RegisterServlet extends HttpServlet {
             String email = request.getParameter("email");
             String password = request.getParameter("password");
 
-            // 基本验证
+            // Basic validation
             if (!isValidEmail(email) || password == null || password.trim().isEmpty()) {
                 throw new IllegalArgumentException("Invalid email or password");
             }
 
-            // 检查邮箱是否存在
+            // Check if email already exists
             if (userDAO.isEmailExists(email)) {
                 throw new IllegalArgumentException("Email already exists");
             }
 
+            // Create user object based on user type
             User user = createUserByType(request);
-            
+
+            // Register user and redirect based on success or failure
             if (user != null && userDAO.registerUser(user)) {
                 response.sendRedirect("login.jsp?success=Registration successful");
             } else {
@@ -43,6 +61,12 @@ public class RegisterServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Creates a User object based on the user type specified in the request.
+     *
+     * @param request the HttpServletRequest object containing the user details
+     * @return a User object representing the user to be registered
+     */
     private User createUserByType(HttpServletRequest request) {
         String userType = request.getParameter("user_type");
         if ("AcademicProfessional".equals(userType)) {
@@ -53,6 +77,13 @@ public class RegisterServlet extends HttpServlet {
         return null;
     }
 
+    /**
+     * Creates a User object for an academic professional.
+     *
+     * @param request the HttpServletRequest object containing the professional's details
+     * @return a User object for the academic professional
+     * @throws IllegalArgumentException if required details are missing or invalid
+     */
     private User createAcademicProfessional(HttpServletRequest request) {
         String name = request.getParameter("name");
         String email = request.getParameter("email");
@@ -69,6 +100,13 @@ public class RegisterServlet extends HttpServlet {
         return new User(name, email, password, currentInstitution, academicPosition);
     }
 
+    /**
+     * Creates a User object for an academic institution.
+     *
+     * @param request the HttpServletRequest object containing the institution's details
+     * @return a User object for the academic institution
+     * @throws IllegalArgumentException if required details are missing or invalid
+     */
     private User createAcademicInstitution(HttpServletRequest request) {
         String institutionName = request.getParameter("institution_name");
         String email = request.getParameter("email");
@@ -81,6 +119,12 @@ public class RegisterServlet extends HttpServlet {
         return new User(institutionName, email, password);
     }
 
+    /**
+     * Validates an email address format.
+     *
+     * @param email the email address to validate
+     * @return true if the email is valid, false otherwise
+     */
     private boolean isValidEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             return false;

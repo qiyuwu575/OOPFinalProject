@@ -13,21 +13,36 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * The CourseSearchServlet class handles requests for searching courses.
+ * It allows logged-in academic professionals to search for courses based on various filters or view all available courses.
+ */
 @WebServlet("/professional/search-courses")
 public class CourseSearchServlet extends HttpServlet {
-    private CourseDAO courseDAO = new CourseDAO();
 
+    private final CourseDAO courseDAO = new CourseDAO();
+
+    /**
+     * Handles GET requests for searching courses.
+     * Checks if the user is authenticated and authorized, retrieves search parameters,
+     * executes the course search, and forwards the results to the search results page.
+     *
+     * @param request  the HttpServletRequest object containing the request details
+     * @param response the HttpServletResponse object for sending the response
+     * @throws ServletException if an error occurs during request processing
+     * @throws IOException      if an I/O error occurs during request processing
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // 检查用户是否登录
+        // Check if the user is logged in
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
-        // 获取用户类型
+        // Check user type
         User user = (User) session.getAttribute("user");
         if (!"AcademicProfessional".equals(user.getUserType())) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
@@ -35,51 +50,59 @@ public class CourseSearchServlet extends HttpServlet {
         }
 
         try {
-            // 获取搜索参数
+            // Retrieve search parameters
             String courseCode = request.getParameter("courseCode");
             String courseName = request.getParameter("courseName");
             String term = request.getParameter("term");
             String schedule = request.getParameter("schedule");
             String deliveryMethod = request.getParameter("deliveryMethod");
-            
-            // 执行搜索
+
+            // Execute search
             List<Course> courses;
-            if (courseCode == null && courseName == null && term == null && 
+            if (courseCode == null && courseName == null && term == null &&
                 schedule == null && deliveryMethod == null) {
-                // 如果没有搜索条件，获取所有课程
+                // If no search filters are provided, retrieve all courses
                 courses = courseDAO.getAllCourses();
             } else {
-                // 根据条件搜索课程
+                // Search for courses based on the provided filters
                 courses = courseDAO.searchCourses(courseCode, courseName, term);
             }
 
-            // 设置搜索结果
+            // Set search results as a request attribute
             request.setAttribute("courses", courses);
-            
-            // 保持搜索条件
+
+            // Retain search parameters for display
             request.setAttribute("courseCode", courseCode);
             request.setAttribute("courseName", courseName);
             request.setAttribute("term", term);
             request.setAttribute("schedule", schedule);
             request.setAttribute("deliveryMethod", deliveryMethod);
-            
-            // 设置搜索已执行标志
+
+            // Mark search as performed
             request.setAttribute("searchPerformed", true);
-            
-            // 转发到搜索结果页面
+
+            // Forward to the search results page
             request.getRequestDispatcher("/professional/search.jsp").forward(request, response);
-            
+
         } catch (Exception e) {
-            // 处理错误
+            // Handle errors
             request.setAttribute("error", "An error occurred while searching courses: " + e.getMessage());
             request.getRequestDispatcher("/professional/search.jsp").forward(request, response);
         }
     }
 
+    /**
+     * Handles POST requests for searching courses.
+     * Forwards the request to the {@link #doGet(HttpServletRequest, HttpServletResponse)} method.
+     *
+     * @param request  the HttpServletRequest object containing the request details
+     * @param response the HttpServletResponse object for sending the response
+     * @throws ServletException if an error occurs during request processing
+     * @throws IOException      if an I/O error occurs during request processing
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // POST 请求也使用 doGet 方法处理
         doGet(request, response);
     }
 }

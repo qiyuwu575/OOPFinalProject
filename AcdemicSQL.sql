@@ -66,3 +66,25 @@ CREATE TABLE Teaching_Requests (
     FOREIGN KEY (course_id) REFERENCES Courses(course_id),
     FOREIGN KEY (professional_id) REFERENCES Users(user_id)
 );
+
+CREATE TABLE Notifications (
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_read BOOLEAN DEFAULT FALSE,
+    type VARCHAR(50),
+    related_id INT,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);
+
+
+CREATE TABLE Applications (
+    application_id INT PRIMARY KEY AUTO_INCREMENT,
+    course_id INT NOT NULL,
+    professional_id INT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    application_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id),
+    FOREIGN KEY (professional_id) REFERENCES Users(user_id)
+);
